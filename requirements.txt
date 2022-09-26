@@ -1,0 +1,5 @@
+kaggle
+pandas
+torch
+pytorch-lightning
+transformers
