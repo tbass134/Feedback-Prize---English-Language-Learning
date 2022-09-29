@@ -75,7 +75,7 @@ class Model(pl.LightningModule):
 
     def forward(self, x):
         x = self.deberta(input_ids=x['input_ids'], attention_mask=x['attention_mask'], token_type_ids=x['token_type_ids'], return_dict=False)
-        x = self.dropout(x)
+        x = self.dropout(x[0])
         x = self.out(x)
         return x
 

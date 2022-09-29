@@ -9,5 +9,5 @@ def download_dataset(dir, command, zip):
 
         os.system(f"{command} -w -p {dir}")
         import zipfile
-        with zipfile.ZipFile(f"{dir}/feedback-prize-english-language-learning.zip","r") as zip_ref:    
+        with zipfile.ZipFile(f"{dir}/{zip}","r") as zip_ref:    
             zip_ref.extractall(dir)
