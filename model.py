@@ -63,34 +63,30 @@ class FeedbackDataset(torch.utils.data.Dataset):
 
 
 class Model(pl.LightningModule):
-    def __init__(self, train_path, test_path):
+    def __init__(self,CFG):
         super().__init__()
-        self.model = None
-        self.train_df = pd.read_csv(train_path)
-        self.test_df = pd.read_csv(test_path)
-        self.tokenizer  = AutoTokenizer.from_pretrained("microsoft/deberta-base")
-        self.deberta = AutoModel.from_pretrained("microsoft/deberta-base")
-        self.dropout = nn.Dropout(0.2)
-        self.linear = nn.Linear(1024,256)
-        self.relu = nn.ReLU()
-        self.out = nn.Linear(256,6)
+        self.CFG = CFG
+        self.train_df = pd.read_csv(self.CFG["train_path"])
+        self.test_df = pd.read_csv(self.CFG["test_path"])
+        self.tokenizer  = AutoTokenizer.from_pretrained(self.CFG["model_name"])
+        self.deberta = AutoModel.from_pretrained(self.CFG["model_name"])
+        self.dropout = nn.Dropout(self.CFG["dropout"])
+        self.out = nn.Linear(768,self.CFG["num_classes"])
 
     def forward(self, x):
-        x = self.deberta(input_ids=x['input_ids'], attention_mask=x['attention_mask'], token_type_ids=x['token_type_ids'])
-        x = self.dropout(x[0])
-        x = self.linear(x)
-        x = self.relu(x)
+        x = self.deberta(input_ids=x['input_ids'], attention_mask=x['attention_mask'], token_type_ids=x['token_type_ids'], return_dict=False)
+        x = self.dropout(x)
         x = self.out(x)
         return x
 
 
     def train_dataloader(self):
-        ds = FeedbackDataset(self.train_df, self.tokenizer, 512)
-        return DataLoader(ds, batch_size=32)
+        ds = FeedbackDataset(self.train_df, self.tokenizer,self.CFG["max_len"])
+        return DataLoader(ds, batch_size=self.CFG["train_batch_size"], shuffle=True)
 
     def test_dataloader(self):
-        ds = FeedbackDataset(self.test_df, self.tokenizer, 512)
-        return DataLoader(ds, batch_size=32)
+        ds = FeedbackDataset(self.test_df, self.tokenizer, self.CFG["max_len"], is_test=True)
+        return DataLoader(ds, batch_size=self.CFG["val_batch_size"], shuffle=False)
 
     def training_step(self, batch, batch_idx):
         x, y = batch
@@ -115,4 +111,4 @@ class Model(pl.LightningModule):
         return loss
 
     def configure_optimizers(self):
-        return torch.optim.Adam(self.parameters(), lr=1e-3)
+        return torch.optim.Adam(self.parameters(), lr=self.CFG["lr"])
