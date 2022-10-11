@@ -6,11 +6,12 @@ import train
 CFG = {
     'train_path': 'data/train.csv',
     'test_path': 'data/test.csv',
-    'model_name': 'microsoft/deberta-base',
+    # 'model_name': 'microsoft/deberta-base',
+    'model_name': 'bert-base-uncased',
     'max_len': 512,
-    'train_batch_size': 32,
-    'valid_batch_size': 32,
-    'dropout': 0.3,
+    'train_batch_size': 16,
+    'valid_batch_size': 16,
+    'dropout': 0.5,
     'num_classes': 6,
     'lr': 1e-5,
     'epochs': 1
